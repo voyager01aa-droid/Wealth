@@ -1,0 +1,39 @@
+name: Daily Stock Screener Update
+
+on:
+  schedule:
+    # Runs at 03:15 UTC everyday (which is exactly 8:45 AM IST)
+    - cron: '15 3 * * 1-5' 
+  workflow_dispatch: # Allows you to run it manually by clicking a button
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-update:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+
+    - name: Install Dependencies
+      run: |
+        pip install -r requirements.txt
+
+    - name: Run Screener Script
+      run: |
+        python screener.py
+
+    - name: Commit and Push index.html
+      run: |
+        git config --global user.name "GitHub Action Bot"
+        git config --global user.email "action@github.com"
+        git add index.html
+        git commit -m "Automated Market Update" || exit 0
+        git push
